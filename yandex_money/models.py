@@ -67,9 +67,9 @@ class Payment(models.Model):
 
     # Required request fields
     shop_id = models.PositiveIntegerField(
-        u'ID магазина', default=settings.YANDEX_MONEY_SHOP_ID)
+        u'ID магазина')
     scid = models.PositiveIntegerField(
-        u'Номер витрины', default=settings.YANDEX_MONEY_SCID)
+        u'Номер витрины')
     customer_number = models.CharField(
         u'Идентификатор плательщика', max_length=64,
         default=get_random_string)
@@ -90,9 +90,9 @@ class Payment(models.Model):
     cps_phone = models.CharField(
         u'Телефон плательщика', max_length=15, blank=True, null=True)
     success_url = models.URLField(
-        u'URL успешной оплаты', default=settings.YANDEX_MONEY_SUCCESS_URL)
+        u'URL успешной оплаты')
     fail_url = models.URLField(
-        u'URL неуспешной оплаты', default=settings.YANDEX_MONEY_FAIL_URL)
+        u'URL неуспешной оплаты')
 
     # Transaction info
     status = models.CharField(
@@ -129,6 +129,14 @@ class Payment(models.Model):
     @classmethod
     def get_used_scids(cls):
         return cls.objects.values_list('scid', flat=True).distinct()
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.shop_id = settings.YANDEX_MONEY_SHOP_ID
+            self.scid = settings.YANDEX_MONEY_SCID
+            self.success_url = settings.YANDEX_MONEY_SUCCESS_URL
+            self.fail_url = settings.YANDEX_MONEY_FAIL_URL
+        super(Payment, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ('-pub_date',)
